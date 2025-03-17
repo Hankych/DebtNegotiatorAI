@@ -23,19 +23,15 @@ Guidelines:
 1. Be understanding of financial difficulties
 2. Suggest realistic payment plans (monthly, biweekly, or weekly)
 3. Don't accept unreasonably low payments
-4. Aim for 3-12 month terms when possible
+4. Aim for 1-12 month terms when possible
 5. Be professional but friendly
-6. When agreement is reached (including full payment):
+5. IMPORTANT: When agreement is reached, ALWAYS include a payment URL:
    - Express positive confirmation
-   - Clearly state the final payment plan: amount per payment, frequency, and duration
-   - Include ONLY ONE payment URL where:
-     - termLength must be exactly "monthly", "biweekly", or "weekly"
-     - totalDebtAmount is the full debt amount
-     - termPaymentAmount is the amount per payment
-   collectwise.com/payments?termLength={frequency}&totalDebtAmount={totalDebtAmount}&termPaymentAmount={amountPerPayment}
-   - End with a brief "Let me know if you need anything else"
-
-   You are an AI debt negotiation assistant for CollectWise. Your role is to help users set up payment plans for their outstanding debts.
+   - State the payment plan details: amount per payment, frequency, and duration
+   - MUST include payment URL in this format:
+     [collectwise.com/payments?termLength={frequency}&totalDebtAmount=2400&termPaymentAmount={amount}]
+   - Where frequency is exactly "monthly", "biweekly", or "weekly"
+   - End with "Let me know if you need anything else!"
 
 Key Guidelines:
 1. Stay FIRMLY focused on finding a workable payment solution. If users try to change the subject or make extreme statements:
@@ -49,6 +45,8 @@ Key Guidelines:
    - Redirect firmly: "My role is to help you find a manageable payment plan"
    - Focus on solutions: "Would a lower weekly payment of $X be more manageable?"
    - Never engage in discussion of self-harm or other non-payment topics
+   
+
 
 Conversation Flow:
 1. Start by asking if they can resolve the debt today
@@ -62,16 +60,11 @@ Conversation Flow:
    - Or weekly ($100 weekly)
 4. Be firm but understanding throughout the negotiation
 
-Example agreement responses:
-Full Payment: "Excellent! I'll set up your one-time payment of $2,400. [collectwise.com/payments?termLength=monthly&totalDebtAmount=2400&termPaymentAmount=2400]"
-
-Monthly: "Great! I've set up your payment plan: $800 per month for 3 months, totaling $2,400. [collectwise.com/payments?termLength=monthly&totalDebtAmount=2400&termPaymentAmount=800]"
-
-Biweekly: "Great! I've set up your payment plan: $400 biweekly for 3 months, totaling $2,400. [collectwise.com/payments?termLength=biweekly&totalDebtAmount=2400&termPaymentAmount=400]"
-
-Weekly: "Great! I've set up your payment plan: $200 weekly for 3 months, totaling $2,400. [collectwise.com/payments?termLength=weekly&totalDebtAmount=2400&termPaymentAmount=200]"
-
-Let me know if you need anything else!`
+Remember:
+1. NEVER confirm a payment plan without including the payment URL
+2. Stay focused on finding a workable payment solution
+3. Always try multiple options before accepting "I can't"
+4. Get explicit confirmation before finalizing any agreement`
   };
 
   // Convert messages to OpenAI format
@@ -92,23 +85,27 @@ Let me know if you need anything else!`
   let cleanedResponse = response;
 
   // Check if response contains a payment URL
-  const paymentUrlMatch = response?.match(/collectwise\.com\/payments\?[^)\]]+/);
+  const paymentUrlMatch = response?.match(/\[collectwise\.com\/payments\?[^\]]+\]/);
   const isAgreementReached = !!paymentUrlMatch;
 
   // Extract payment details if agreement reached
   let suggested_term_length;
   let suggested_payment_amount;
+  let payment_url;
   
   if (isAgreementReached && paymentUrlMatch) {
     try {
-      // Clean up the URL - remove markdown formatting and add protocol
-      const cleanUrl = 'https://' + paymentUrlMatch[0].split('](')[0].replace(/[\[\]]/g, '');
-      const url = new URL(cleanUrl);
-      suggested_term_length = parseInt(url.searchParams.get('termLength') || '0');
+      // Get the URL without brackets
+      const urlWithoutBrackets = paymentUrlMatch[0].slice(1, -1);
+      // Add https:// protocol
+      payment_url = 'https://' + urlWithoutBrackets;
+      
+      const url = new URL(payment_url);
+      const termLength = url.searchParams.get('termLength');
       suggested_payment_amount = parseFloat(url.searchParams.get('termPaymentAmount') || '0');
       
-      // Remove the URL from the response text
-      cleanedResponse = response.replace(/\[?collectwise\.com\/payments\?[^\])\s]*\]?/g, '').trim();
+      // Keep the original response with the URL
+      cleanedResponse = response;
     } catch (error) {
       console.error('URL parsing error:', error);
       throw new Error('Failed to parse payment URL');
@@ -120,6 +117,6 @@ Let me know if you need anything else!`
     suggested_term_length,
     suggested_payment_amount,
     is_agreement_reached: isAgreementReached,
-    payment_url: paymentUrlMatch ? paymentUrlMatch[0] : undefined
+    payment_url
   };
 } 

@@ -12,8 +12,20 @@ interface PaymentPlanCardProps {
 export default function PaymentPlanCard({ paymentDetails, onProceedToPayment }: PaymentPlanCardProps) {
   const { paymentAmount, totalAmount, term, frequency = 'monthly' } = paymentDetails;
 
-  // Format term to include "months"
-  const formattedTerm = `${term} ${term === '1' ? 'month' : 'months'}`;
+  // Format term to include correct units based on frequency
+  const formattedTerm = () => {
+    switch (frequency) {
+      case 'weekly':
+        return `${term} weeks`;
+      case 'biweekly':
+        // Convert biweekly payments to weeks by multiplying by 2
+        return `${Number(term) * 2} weeks`;
+      case 'monthly':
+        return `${term} ${term === '1' ? 'month' : 'months'}`;
+      default:
+        return term;
+    }
+  };
 
   // Get the payment frequency label
   const getPaymentLabel = () => {
@@ -25,6 +37,11 @@ export default function PaymentPlanCard({ paymentDetails, onProceedToPayment }: 
       default:
         return 'Monthly Payment';
     }
+  };
+
+  // Format amount to always show 2 decimal places
+  const formatAmount = (amount: string | number) => {
+    return `$${parseFloat(amount.toString()).toFixed(2)}`;
   };
 
   return (
@@ -41,15 +58,15 @@ export default function PaymentPlanCard({ paymentDetails, onProceedToPayment }: 
       <div className={styles.payment__summary}>
         <div className={styles['payment__summary-row']}>
           <span className={styles['payment__summary-label']}>{getPaymentLabel()}</span>
-          <span className={styles['payment__summary-value']}>${paymentAmount}</span>
+          <span className={styles['payment__summary-value']}>{formatAmount(paymentAmount)}</span>
         </div>
         <div className={styles['payment__summary-row']}>
           <span className={styles['payment__summary-label']}>Term Length</span>
-          <span className={styles['payment__summary-value']}>{formattedTerm}</span>
+          <span className={styles['payment__summary-value']}>{formattedTerm()}</span>
         </div>
         <div className={styles['payment__summary-row']}>
           <span className={styles['payment__summary-label']}>Total Amount</span>
-          <span className={styles['payment__summary-value']}>${totalAmount}</span>
+          <span className={styles['payment__summary-value']}>{formatAmount(totalAmount)}</span>
         </div>
       </div>
 
