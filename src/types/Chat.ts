@@ -5,12 +5,7 @@ export interface ChatMessage {
   timestamp?: Date;
 }
 
-export interface PaymentPlan {
-  term_length: number;
-  total_debt_amount: number;
-  term_payment_amount: number;
-  payment_frequency: 'monthly' | 'biweekly' | 'weekly';
-}
+import { PaymentPlan } from './Payment';
 
 export interface ChatResponse {
   response: string;
@@ -24,9 +19,4 @@ export interface NegotiationState {
   attempts: number;
   is_agreement_reached: boolean;
   last_suggestion: PaymentPlan;
-}
-
-export interface Message {
-  role: 'user' | 'assistant';
-  content: string;
 } 

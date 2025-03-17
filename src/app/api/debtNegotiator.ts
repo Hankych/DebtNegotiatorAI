@@ -58,6 +58,7 @@ Conversation Flow:
    - If user can't afford, try longer terms (e.g. $400 monthly for 6 months)
    - If still too high, consider biweekly ($200 biweekly)
    - Or weekly ($100 weekly)
+   
 4. Be firm but understanding throughout the negotiation
 
 Remember:
